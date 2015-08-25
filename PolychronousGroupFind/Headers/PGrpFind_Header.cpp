@@ -4,37 +4,14 @@
 #include <unordered_set>
 #include <stdint.h>
 #include <mex.h>
+#include <stdio.h>
 
 #include "PGrpFind_Header.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\MexMem.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\GenericMexIO.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\LambdaToFunction.hpp"
 
 using namespace PGrpFind;
-
-void PGrpFind::WriteOutput(char *Format, ...) {
-	char buffertemp[256], bufferFinal[256];
-	std::va_list Args;
-	va_start(Args, Format);
-	vsnprintf_s(buffertemp, 256, Format, Args);
-
-	char* tempIter = buffertemp;
-	char* FinalIter = bufferFinal;
-	for (; *tempIter != 0; ++tempIter, ++FinalIter){
-		if (*tempIter == '%'){
-			*FinalIter = '%';
-			++FinalIter;
-			*FinalIter = '%';
-		}
-		else{
-			*FinalIter = *tempIter;
-		}
-	}
-	*FinalIter = 0;
-#ifdef MEX_LIB
-	mexPrintf(bufferFinal);
-	mexEvalString("drawnow();");
-#elif defined MEX_EXE
-	printf(bufferFinal);
-#endif
-}
 
 PGrpFind::OutputVariables::OutputVariables():
 	PNGSpikeNeuronsVect(),
@@ -50,11 +27,11 @@ SimulationVars::SimulationVars(mxArray *MatlabInputStruct): SimulationVars(){
 
 void SimulationVars::initialize(mxArray *MatlabInputStruct){
 
-	this->N = mxGetNumberOfElements(mxGetField(MatlabInputStruct, 0, "a"));
-	this->M = mxGetNumberOfElements(mxGetField(MatlabInputStruct, 0, "NStart"));
+	this->N = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "a"     , MexMemInputOps(true)));
+	this->M = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "NStart", MexMemInputOps(true)));
 
-	this->onemsbyTstep = *reinterpret_cast<int *>(mxGetData(mxGetField(MatlabInputStruct, 0, "onemsbyTstep")));
-	this->DelayRange = *reinterpret_cast<int *>(mxGetData(mxGetField(MatlabInputStruct, 0, "DelayRange")));
+	getInputfromStruct<int>(MatlabInputStruct, "onemsbyTstep", this->onemsbyTstep, 1, "is_required");
+	getInputfromStruct<int>(MatlabInputStruct, "DelayRange", this->DelayRange, 1, "is_required");
 	
 	float*      genFloatPtr[4];     // Generic float Pointers used around the place to access data
 	int*        genIntPtr[2];       // Generic int Pointers used around the place to access data
@@ -63,35 +40,25 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 	mxArray *   genmxArrayPtr;      // Generic mxArray Pointer used around the place to access data
 
 	// Initializing neuron specification structure array Neurons
-	genFloatPtr[0] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "a")));	// a[N]
-	genFloatPtr[1] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "b")));	// b[N]
-	genFloatPtr[2] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "c")));	// c[N]
-	genFloatPtr[3] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "d")));	// d[N]
-
-	this->Neurons = MexVector<Neuron>(N);
-
-	for (int i = 0; i < N; ++i){
-		this->Neurons[i].a = genFloatPtr[0][i];
-		this->Neurons[i].b = genFloatPtr[1][i];
-		this->Neurons[i].c = genFloatPtr[2][i];
-		this->Neurons[i].d = genFloatPtr[3][i];
-	}
+	getInputfromStruct(MatlabInputStruct, "a b c d", this->Neurons, 
+		FFL([](StructArgTable &StructMembers, Neuron &CurrNeuron)->void {
+			CurrNeuron.a = *reinterpret_cast<float *>(StructMembers["a"].first);
+			CurrNeuron.b = *reinterpret_cast<float *>(StructMembers["b"].first);
+			CurrNeuron.c = *reinterpret_cast<float *>(StructMembers["c"].first);
+			CurrNeuron.d = *reinterpret_cast<float *>(StructMembers["d"].first);
+		}),
+		2, "is_required", "required_size", N);
 
 	// Initializing network (Synapse) specification structure array Network
-	genIntPtr[0] = reinterpret_cast<int   *>(mxGetData(mxGetField(MatlabInputStruct, 0, "NStart")));	  // NStart[M]
-	genIntPtr[1] = reinterpret_cast<int   *>(mxGetData(mxGetField(MatlabInputStruct, 0, "NEnd")));      // NEnd[M]
-	genFloatPtr[0] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "Weight")));    // Weight[M]
-	genFloatPtr[1] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "Delay")));     // Delay[M]
-
-	this->Network = MexVector<Synapse>(M);
-
-	for (int i = 0; i < M; ++i){
-		this->Network[i].NStart = genIntPtr[0][i];
-		this->Network[i].NEnd = genIntPtr[1][i];
-		this->Network[i].Weight = genFloatPtr[0][i];
-		this->Network[i].DelayinTsteps = (int(genFloatPtr[1][i] * this->onemsbyTstep + 0.5) > 0) ?
-			int(genFloatPtr[1][i] * this->onemsbyTstep + 0.5) : 1;
-	}
+	getInputfromStruct(MatlabInputStruct, "NStart NEnd InitialState.Weight Delay", this->Network, 
+		FFL([&](StructArgTable &StructMembers, Synapse &CurrNeuron)->void {
+			CurrNeuron.NStart        = *reinterpret_cast<int *>(StructMembers["NStart"             ].first);
+			CurrNeuron.NEnd          = *reinterpret_cast<int *>(StructMembers["NEnd"               ].first);
+			CurrNeuron.Weight        = *reinterpret_cast<float *>(StructMembers["InitialState.Weight"].first);
+			CurrNeuron.DelayinTsteps = *reinterpret_cast<float *>(StructMembers["Delay"].first) * onemsbyTstep + 0.5f;
+		}),
+		2, "is_required", "required_size", M
+	);
 	
 	this->FlippedExcNetwork.resize(0);
 	this->StrippedNetworkMapping.resize(0);
@@ -914,7 +881,7 @@ void PGrpFind::GetPolychronousGroups(SimulationVars &SimVars, OutputVariables &O
 		}
 		}
 		}
-		PGrpFind::WriteOutput("Completed for target Neuron : %d\n", NeuTarget);
+		WriteOutput("Completed for target Neuron : %d\n", NeuTarget);
 	}
 	
 	// Performing Output Conversion from unordered_map<uint64_T, PolyChrNeuronGroup>

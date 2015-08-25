@@ -262,7 +262,6 @@ inline float FindSpikingProb(
 	}
 }
 void GetPolychronousGroups(SimulationVars &SimVars, OutputVariables &OutVars);
-void WriteOutput(char *Format, ...);
 void AnalyseGroups(SimulationVars &SimVars, uint64_t CurrentCombination);
 void AnalysePNGofCurrentCombination(
 	SimulationVars &SimVars,

@@ -1,7 +1,8 @@
 % This script requires Polychronization to be checked out into the branch 
-% 'Polychronization/General-Current-Kernel' (preferably at the commit 
-% 'Polychronization with General Current Kernel'
-% (1149c1a413f9336ec80c25816b9a48df86df7476)
+% 'Polychronization/General-Current-Kernel' (preferably at or after
+%  the commit 
+% 'Merge multiple changes master -> Polychronization/General-Current-Kernel'
+% (269bd004489d1b70f8f33b85038ce719d31bf084)
 
 % The path of the polychronization project is to be specified in the
 % variable PolychronizationPath along with the trailing '/' RELATIVE to the
@@ -58,7 +59,7 @@ InputStruct.d = single(d);
 
 InputStruct.NStart = int32(NStartVect);
 InputStruct.NEnd   = int32(NEndVect);
-InputStruct.Weight = single(Weights);
+InputStruct.InitialState.Weight = single(Weights);
 InputStruct.Delay  = single(Delays);
 
 InputStruct.V = single(-65*ones(N,1));
@@ -75,42 +76,37 @@ InputStruct.IExtGenState          = uint32(30);
 InputStruct.OutputFile = 'SimResults1000DebugSparseLong.mat';
 save('../../../Polychronization/TimeDelNetSim/Data/InputData.mat', 'InputStruct');
 
-[OutputVarsSparse, StateVarsSparse, FinalStateSparse, InitStateSparse] = TimeDelNetSim(InputStruct);
+[OutputVarsSparse, StateVarsSparse, FinalStateSparse, InputStateSparse] = TimeDelNetSim(InputStruct);
 clear functions;
 %% Finding PNG's at a specified time instant
 
 clear InputStruct;
 
 % Getting InputStruct Initialized by returned state
-InputStruct = ConvertStatetoInitialCond(StateVarsSparse, (60*8)*4000);
-
-InputStruct.a = single(a);
-InputStruct.b = single(b);
-InputStruct.c = single(c);
-InputStruct.d = single(d);
-
-InputStruct.NStart = int32(NStartVect);
-InputStruct.NEnd   = int32(NEndVect);
-% Weight Initialization done using retured state
-InputStruct.Delay  = single(Delays);
+InputStruct = InputStateSparse;
+InputStruct.InitialState = getSingleState(StateVarsSparse, (60*8)*4000);
 
 InputStruct.onemsbyTstep          = int32(1);
-InputStruct.DelayRange            = int32(DelayRange);
 InputStruct.OutputFile            = 'PNGsin1000NeuronsWOProhib.mat';
 
-% OutVars = PolychronousGrpFind(InputStruct);
-% clear functions;
+save(strcat(PNGFindingPath, '../Data/InputData.mat'), 'InputStruct');
+cd(strcat(PNGFindingPath, '../'));
+!"..\x64\Release_Exe\PolychronousGroupFind.exe"
+cd(strcat(PNGFindingPath, '../../', PolychronizationPath, 'TimeDelNetSim/MatlabSource'));
 
-% save('..\..\PolychronousGrpFind\Data\InputData.mat', 'InputStruct');
-PNGList = PolychronousGroupFind(InputStruct);
-clear functions;
+load(strcat(PNGFindingPath, '../Data/', InputStruct.OutputFile));
+PNGList = OutputVars;
+clear OutputVars;
+
+% PNGList = PolychronousGroupFind(InputStruct);
+% clear functions;
 %% Changing directories
 
 cd(PNGFindingPath);
 
 %% Process Data
 
-ChosenPNGIndex = 1;
+ChosenPNGIndex = 49;
 ChosenPNG = GetPNG(PNGList, ChosenPNGIndex);
 ChosenPNGWOInhib = GetPNGWOInhib(ChosenPNG, 800);
 ChosenRelativePNG = ConvertPNGtoRelative(ChosenPNGWOInhib, InputStruct.NStart, InputStruct.Delay);
