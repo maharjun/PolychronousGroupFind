@@ -3,40 +3,15 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <cstdio>
-#include <cstdarg>
 #include <stdint.h>
 #include <mex.h>
 
 #include "PGrpFind_Header.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\MexMem.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\GenericMexIO.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\LambdaToFunction.hpp"
 
 using namespace PGrpFind;
-
-void PGrpFind::WriteOutput(char *Format, ...) {
-	char buffertemp[256], bufferFinal[256];
-	std::va_list Args;
-	va_start(Args, Format);
-	vsnprintf_s(buffertemp, 256, Format, Args);
-
-	char* tempIter = buffertemp;
-	char* FinalIter = bufferFinal;
-	for (; *tempIter != 0; ++tempIter, ++FinalIter){
-		if (*tempIter == '%'){
-			*FinalIter = '%';
-			++FinalIter;
-			*FinalIter = '%';
-		}
-		else{
-			*FinalIter = *tempIter;
-		}
-	}
-	*FinalIter = 0;
-#ifdef MEX_LIB
-	mexPrintf(bufferFinal);
-	mexEvalString("drawnow();");
-#elif defined MEX_EXE
-	printf(bufferFinal);
-#endif
-}
 
 PGrpFind::OutputVariables::OutputVariables():
 	PNGSpikeNeuronsVect(),
@@ -52,12 +27,12 @@ SimulationVars::SimulationVars(mxArray *MatlabInputStruct): SimulationVars(){
 
 void SimulationVars::initialize(mxArray *MatlabInputStruct){
 
-	this->N = mxGetNumberOfElements(mxGetField(MatlabInputStruct, 0, "a"));
-	this->M = mxGetNumberOfElements(mxGetField(MatlabInputStruct, 0, "NStart"));
+	this->N = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "a"     , MexMemInputOps(true)));
+	this->M = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "NStart", MexMemInputOps(true)));
 
-	this->onemsbyTstep = *reinterpret_cast<int *>(mxGetData(mxGetField(MatlabInputStruct, 0, "onemsbyTstep")));
-	this->DelayRange = *reinterpret_cast<int *>(mxGetData(mxGetField(MatlabInputStruct, 0, "DelayRange")));
-
+	getInputfromStruct<int>(MatlabInputStruct, "onemsbyTstep", this->onemsbyTstep, 1, "is_required");
+	getInputfromStruct<int>(MatlabInputStruct, "DelayRange", this->DelayRange, 1, "is_required");
+	
 	float*      genFloatPtr[4];     // Generic float Pointers used around the place to access data
 	int*        genIntPtr[2];       // Generic int Pointers used around the place to access data
 	uint32_t*	genUIntPtr[1];		// Generic unsigned int Pointers used around the place to access data (generator bits)
@@ -65,35 +40,25 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 	mxArray *   genmxArrayPtr;      // Generic mxArray Pointer used around the place to access data
 
 	// Initializing neuron specification structure array Neurons
-	genFloatPtr[0] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "a")));	// a[N]
-	genFloatPtr[1] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "b")));	// b[N]
-	genFloatPtr[2] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "c")));	// c[N]
-	genFloatPtr[3] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "d")));	// d[N]
-
-	this->Neurons = MexVector<Neuron>(N);
-
-	for (int i = 0; i < N; ++i){
-		this->Neurons[i].a = genFloatPtr[0][i];
-		this->Neurons[i].b = genFloatPtr[1][i];
-		this->Neurons[i].c = genFloatPtr[2][i];
-		this->Neurons[i].d = genFloatPtr[3][i];
-	}
+	getInputfromStruct(MatlabInputStruct, "a b c d", this->Neurons, 
+		FFL([](StructArgTable &StructMembers, Neuron &CurrNeuron)->void {
+			CurrNeuron.a = *reinterpret_cast<float *>(StructMembers["a"].first);
+			CurrNeuron.b = *reinterpret_cast<float *>(StructMembers["b"].first);
+			CurrNeuron.c = *reinterpret_cast<float *>(StructMembers["c"].first);
+			CurrNeuron.d = *reinterpret_cast<float *>(StructMembers["d"].first);
+		}),
+		2, "is_required", "required_size", N);
 
 	// Initializing network (Synapse) specification structure array Network
-	genIntPtr[0] = reinterpret_cast<int   *>(mxGetData(mxGetField(MatlabInputStruct, 0, "NStart")));	  // NStart[M]
-	genIntPtr[1] = reinterpret_cast<int   *>(mxGetData(mxGetField(MatlabInputStruct, 0, "NEnd")));      // NEnd[M]
-	genFloatPtr[0] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "Weight")));    // Weight[M]
-	genFloatPtr[1] = reinterpret_cast<float *>(mxGetData(mxGetField(MatlabInputStruct, 0, "Delay")));     // Delay[M]
-
-	this->Network = MexVector<Synapse>(M);
-
-	for (int i = 0; i < M; ++i){
-		this->Network[i].NStart = genIntPtr[0][i];
-		this->Network[i].NEnd = genIntPtr[1][i];
-		this->Network[i].Weight = genFloatPtr[0][i];
-		this->Network[i].DelayinTsteps = (int(genFloatPtr[1][i] * this->onemsbyTstep + 0.5) > 0) ?
-			int(genFloatPtr[1][i] * this->onemsbyTstep + 0.5) : 1;
-	}
+	getInputfromStruct(MatlabInputStruct, "NStart NEnd InitialState.Weight Delay", this->Network, 
+		FFL([&](StructArgTable &StructMembers, Synapse &CurrNeuron)->void {
+			CurrNeuron.NStart        = *reinterpret_cast<int *>(StructMembers["NStart"             ].first);
+			CurrNeuron.NEnd          = *reinterpret_cast<int *>(StructMembers["NEnd"               ].first);
+			CurrNeuron.Weight        = *reinterpret_cast<float *>(StructMembers["InitialState.Weight"].first);
+			CurrNeuron.DelayinTsteps = *reinterpret_cast<float *>(StructMembers["Delay"].first) * onemsbyTstep + 0.5f;
+		}),
+		2, "is_required", "required_size", M
+	);
 	
 	this->FlippedExcNetwork.resize(0);
 	this->StrippedNetworkMapping.resize(0);
@@ -403,7 +368,7 @@ void PGrpFind::PublishCurrentSpikes(SimulationVars &SimVars, PolyChrNeuronGroup 
 void PGrpFind::AnalyseGroups(SimulationVars &SimVars, uint64_t CurrentCombination){
 
 	// Aliasing SimVars Variables
-	#pragma region Aliasing SimVars Variables
+#pragma region Aliasing SimVars Variables
 	auto &Network = SimVars.Network;
 	auto &StrippedNetworkMapping = SimVars.StrippedNetworkMapping;
 	auto &Iin = SimVars.Iin;
@@ -420,16 +385,16 @@ void PGrpFind::AnalyseGroups(SimulationVars &SimVars, uint64_t CurrentCombinatio
 	auto &NExc = SimVars.NExc;
 	auto &time = SimVars.time;
 	int &isCurrentPNGRecurrent = SimVars.isCurrentPNGRecurrent;
-	#pragma endregion
+#pragma endregion
 
 	auto NeuronListIterBeg = CurrentNZIinNeurons.begin();
 	auto NeuronListIterEnd = CurrentNZIinNeurons.end();
-	
+
 	// This Loop is responsible for handling the case of repetetive and hence prohibited
 	// Neuron Combinations generated in this time instant. It loops through all the neu-
 	// rons That received  a spike  in the current interval, and performs group analysis
 	// (for prohibition) on the neurons that spiked in the current time instant.
-
+	
 	for (auto NeuronIter = NeuronListIterBeg; NeuronIter != NeuronListIterEnd; ++NeuronIter){
 		int CurrNeuron = *NeuronIter;
 
@@ -438,72 +403,72 @@ void PGrpFind::AnalyseGroups(SimulationVars &SimVars, uint64_t CurrentCombinatio
 		// Excitatory  (Bcuz we do not take into  consideration combinations where the Target
 		// Neuron is Inhibitory.
 		if (CurrNeuron <= NExc && Iin[CurrNeuron - 1] >= SimVars.SpikingCurrentThresh){
-			
-			// Code to add to prohibition list
-			// This is done when at least three synapses contribute to the neurons firing
-			if (CurrentContribSyn[CurrNeuron - 1].size() >= 3){
-				// Sorting the contributing presyn neurons in order to find
-				// combinations better
-				for (auto IncomingSyn : CurrentContribSyn[CurrNeuron - 1]){
-					CurrentPreSynNeurons.push_back(Network[IncomingSyn].NStart);
-				}
-				std::sort(CurrentPreSynNeurons.begin(), CurrentPreSynNeurons.end());
-				int nPreSynNeurons = CurrentPreSynNeurons.size();
 
-				// Loop through all Combinations. All actions performed inside
-				// are for each combination
-				for (int NeuronInd1 = 0             ; NeuronInd1 < nPreSynNeurons - 2; ++NeuronInd1){
-				for (int NeuronInd2 = NeuronInd1 + 1; NeuronInd2 < nPreSynNeurons - 1; ++NeuronInd2){
-				for (int NeuronInd3 = NeuronInd2 + 1; NeuronInd3 < nPreSynNeurons    ; ++NeuronInd3){
-					int Neuron1 = CurrentPreSynNeurons[NeuronInd1];
-					int Neuron2 = CurrentPreSynNeurons[NeuronInd2];
-					int Neuron3 = CurrentPreSynNeurons[NeuronInd3];
-
-					// Calculating the Combination key for the current neuron combination
-					uint64_t LoopCombinationKey = (uint64_t)(CurrNeuron - 1)*NExc*NExc*NExc +
-					                              (uint64_t)(Neuron1    - 1)*NExc*NExc      +
-					                              (uint64_t)(Neuron2    - 1)*NExc           +
-					                              (uint64_t)(Neuron3    - 1);
-
-					if (LoopCombinationKey < CurrentCombination){
-						// The case of the loop combination already having been processed
-						// Check if already in PolychronousGroupMap.
-						// if so remove it.
-						
-						auto MapIterEnd = PolychronousGroupMap.end();
-						auto LoopCombinationPNGEntry = PolychronousGroupMap.find(LoopCombinationKey);
-
-						if (LoopCombinationPNGEntry != MapIterEnd){
-							PolychronousGroupMap.erase(LoopCombinationPNGEntry);
-						}
-					}
-					else if (LoopCombinationKey == CurrentCombination){
-						// This is a case of a  recurrent PNG. In which case,  we need to increment
-						// the  recurrence counter. The  parent function  should run termination in
-						// case isCurrentPNGRecurrent hits 2. The loop is  not broken though as the
-						// other SubPNG's need to be processed as well as The Vectors and lists cl-
-						// eared.
-						isCurrentPNGRecurrent++;
-					}
-					else{
-						// This is the case where the Loop PNG is yet to be processed. In this case
-						// we will have to check if the Loop PNG is already in the Prohibition Set.
-						// If not, it needs to be added so that this PNG is not investigated later.
-
-						auto SetIterEnd = ProhibCombiSet.end();
-						auto LoopCombiSetElement = ProhibCombiSet.find(LoopCombinationKey);
-
-						if (LoopCombiSetElement == SetIterEnd){
-							ProhibCombiSet.insert(LoopCombinationKey);
-						}
-					}
-				}
-				}
-				}
-
-				// Performing Vector clearing operations
-				CurrentPreSynNeurons.clear();
+		// Code to add to prohibition list
+		// This is done when at least three synapses contribute to the neurons firing
+		if (CurrentContribSyn[CurrNeuron - 1].size() >= 3){
+			// Sorting the contributing presyn neurons in order to find
+			// combinations better
+			for (auto IncomingSyn : CurrentContribSyn[CurrNeuron - 1]){
+				CurrentPreSynNeurons.push_back(Network[IncomingSyn].NStart);
 			}
+			std::sort(CurrentPreSynNeurons.begin(), CurrentPreSynNeurons.end());
+			int nPreSynNeurons = CurrentPreSynNeurons.size();
+
+			// Loop through all Combinations. All actions performed inside
+			// are for each combination
+			for (int NeuronInd1 = 0; NeuronInd1 < nPreSynNeurons - 2; ++NeuronInd1){
+				for (int NeuronInd2 = NeuronInd1 + 1; NeuronInd2 < nPreSynNeurons - 1; ++NeuronInd2){
+					for (int NeuronInd3 = NeuronInd2 + 1; NeuronInd3 < nPreSynNeurons; ++NeuronInd3){
+						int Neuron1 = CurrentPreSynNeurons[NeuronInd1];
+						int Neuron2 = CurrentPreSynNeurons[NeuronInd2];
+						int Neuron3 = CurrentPreSynNeurons[NeuronInd3];
+
+						// Calculating the Combination key for the current neuron combination
+						uint64_t LoopCombinationKey = (uint64_t)(CurrNeuron - 1)*NExc*NExc*NExc +
+							(uint64_t)(Neuron1 - 1)*NExc*NExc +
+							(uint64_t)(Neuron2 - 1)*NExc +
+							(uint64_t)(Neuron3 - 1);
+
+						if (LoopCombinationKey < CurrentCombination){
+							// The case of the loop combination already having been processed
+							// Check if already in PolychronousGroupMap.
+							// if so remove it.
+
+							auto MapIterEnd = PolychronousGroupMap.end();
+							auto LoopCombinationPNGEntry = PolychronousGroupMap.find(LoopCombinationKey);
+
+							if (LoopCombinationPNGEntry != MapIterEnd){
+								PolychronousGroupMap.erase(LoopCombinationPNGEntry);
+							}
+						}
+						else if (LoopCombinationKey == CurrentCombination){
+							// This is a case of a  recurrent PNG. In which case,  we need to increment
+							// the  recurrence counter. The  parent function  should run termination in
+							// case isCurrentPNGRecurrent hits 2. The loop is  not broken though as the
+							// other SubPNG's need to be processed as well as The Vectors and lists cl-
+							// eared.
+							isCurrentPNGRecurrent++;
+						}
+						else{
+							// This is the case where the Loop PNG is yet to be processed. In this case
+							// we will have to check if the Loop PNG is already in the Prohibition Set.
+							// If not, it needs to be added so that this PNG is not investigated later.
+
+							auto SetIterEnd = ProhibCombiSet.end();
+							auto LoopCombiSetElement = ProhibCombiSet.find(LoopCombinationKey);
+
+							if (LoopCombiSetElement == SetIterEnd){
+								ProhibCombiSet.insert(LoopCombinationKey);
+							}
+						}
+					}
+				}
+			}
+
+			// Performing Vector clearing operations
+			CurrentPreSynNeurons.clear();
+		}
 		}
 	}
 }
@@ -563,8 +528,8 @@ void PGrpFind::ResetIntermediateVars(SimulationVars &SimVars){
 	
 	// Aliasing Simvars Variables
 	#pragma region Aliasing Simvars Variables
-	auto &CurrentNonZeroIinNeurons = SimVars.CurrentNonZeroIinNeurons;
-	auto &CurrentContribSyn        = SimVars.CurrentContribSyn;
+	auto &CurrentNonZeroIinNeurons  = SimVars.CurrentNonZeroIinNeurons;
+	auto &CurrentContribSyn         = SimVars.CurrentContribSyn;
 	#pragma endregion
 
 	auto CurrNZNeuronIterBeg = CurrentNonZeroIinNeurons.begin();
@@ -595,7 +560,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 
 	auto &time = SimVars.time;
 	auto &CurrentQIndex = SimVars.CurrentQIndex;
-	
+
 	auto &HasSpikedNow = SimVars.HasSpikedNow;
 	auto &Iin = SimVars.Iin;
 	auto &SpikeQueue = SimVars.SpikeQueue;
@@ -618,7 +583,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 	CurrentQIndex = 0;
 	int NeuronCursor = 0; // This is a cursor  used to iterate through the
 				            // different elements in SynapseSet and DelaySet
-				            // when issuing and storing the initial spikes
+	// when issuing and storing the initial spikes
 
 	// Initializing Group
 	PNGCurrent.reset();
@@ -638,7 +603,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 		SpikeQueue[i].clear();
 		MaxLengthofSpike[i].clear();
 	}
-				
+
 	// Initializing MaxLenInCurrIter as 0 for the neurons of current triplet
 	// This is done just before releasing spike.
 
@@ -649,7 +614,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 	// initial iteration which releases the spike of the PreSynaptic neuron
 	// connected to the synapse with the highest delay
 	{
-		int CurrInitNeuron = SortedSynapseSet[2].NStart; 
+		int CurrInitNeuron = SortedSynapseSet[2].NStart;
 		// Publishing this spike into PNGCurrent as it is not done during
 		// the publish spikes procedure
 		PNGCurrent.SpikeNeurons.push_back(CurrInitNeuron);
@@ -673,7 +638,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 	// PNG created by the current combination of Neurons. The initial ite-
 	// ration has beed done outside the loop itself
 	while (!isSpikeQueueEmpty && isCurrentPNGRecurrent != 2 && PNGCurrent.MaxLength < 20){
-					
+
 		// Calling the functions to update current, process spikes, and analyse
 		// the generated  spikes for repetitions in  groups and to ward against
 		// recurrent groups, and to finally store the spikes in the spike queue
@@ -709,7 +674,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 		int j;
 		for (j = 0; j < QueueSize && SpikeQueue[j].isempty(); ++j);
 		isSpikeQueueEmpty = (j == QueueSize); // means SpikeQueue[j].isempty() is true for all j in 1
-					                            // to QueueSize
+		// to QueueSize
 	}
 	#pragma endregion
 }

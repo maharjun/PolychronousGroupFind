@@ -5,6 +5,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
+#include <iostream>
+#include <cstdio>
+#include <cstdarg>
 
 #include "..\..\MexMemoryInterfacing\Headers\MexMem.hpp"
 #include "..\Headers\Network.hpp"
@@ -205,11 +208,9 @@ void PublishCurrentSpikes(SimulationVars &SimVars, PolyChrNeuronGroup &PNGCurren
 void AnalyseGroups(SimulationVars &SimVars, uint64_t CurrentCombination);
 void ProcessArrivingSpikes(SimulationVars &SimVars);
 void StoreSpikes(SimulationVars &SimVars, bool isInitialCase);
-void CombinationRadixSort(SimulationVars &SimVars);
 void ResetIntermediateVars(SimulationVars &SimVars);
 void PerformOutput(SimulationVars &SimVars, OutputVariables &OutVars);
 void GetPolychronousGroups(SimulationVars &SimVars, OutputVariables &OutVars);
-void WriteOutput(char *Format, ...);
 void AnalysePNGofCurrentCombination(
 	SimulationVars &SimVars,
 	PolyChrNeuronGroup &PNGCurr,
