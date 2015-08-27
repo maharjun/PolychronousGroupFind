@@ -30,9 +30,18 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 	this->N = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "a"     , MexMemInputOps(true)));
 	this->M = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "NStart", MexMemInputOps(true)));
 
+	// Initializing compulsory Input Parameters
 	getInputfromStruct<int>(MatlabInputStruct, "onemsbyTstep", this->onemsbyTstep, 1, "is_required");
 	getInputfromStruct<int>(MatlabInputStruct, "DelayRange", this->DelayRange, 1, "is_required");
 	
+	// Giving Default values for Default assigned Simulation Parameters
+	this->SpikingCurrentThresh = 16.0f;
+	this->ZeroCurrentThresh    = 0.3f ;
+	this->MinWeightSyn         = 8.0f ;
+	this->InitialWeight        = 7.0f ;
+	this->MinLengthThreshold   = 5    ;
+	this->MaxLengthThreshold   = 20   ;
+
 	float*      genFloatPtr[4];     // Generic float Pointers used around the place to access data
 	int*        genIntPtr[2];       // Generic int Pointers used around the place to access data
 	uint32_t*	genUIntPtr[1];		// Generic unsigned int Pointers used around the place to access data (generator bits)
@@ -60,6 +69,14 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 		2, "is_required", "required_size", M
 	);
 	
+	// Taking Input for Default assigned Simulation Parameters
+	getInputfromStruct<float>(MatlabInputStruct, "SpikingCurrentThresh", this->SpikingCurrentThresh);
+	getInputfromStruct<float>(MatlabInputStruct, "ZeroCurrentThresh"   , this->ZeroCurrentThresh   );
+	getInputfromStruct<float>(MatlabInputStruct, "MinWeightSyn"        , this->MinWeightSyn        );
+	getInputfromStruct<float>(MatlabInputStruct, "InitialWeight"       , this->InitialWeight       );
+	getInputfromStruct<int  >(MatlabInputStruct, "MinLengthThreshold"  , this->MinLengthThreshold  );
+	getInputfromStruct<int  >(MatlabInputStruct, "MaxLengthThreshold"  , this->MaxLengthThreshold  );
+
 	this->FlippedExcNetwork.resize(0);
 	this->StrippedNetworkMapping.resize(0);
 
@@ -637,7 +654,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 	// recurrence) and determines the structure and apiking squence of the
 	// PNG created by the current combination of Neurons. The initial ite-
 	// ration has beed done outside the loop itself
-	while (!isSpikeQueueEmpty && isCurrentPNGRecurrent != 2 && PNGCurrent.MaxLength < 20){
+	while (!isSpikeQueueEmpty && isCurrentPNGRecurrent != 2 && PNGCurrent.MaxLength < SimVars.MaxLengthThreshold){
 
 		// Calling the functions to update current, process spikes, and analyse
 		// the generated  spikes for repetitions in  groups and to ward against
@@ -787,7 +804,7 @@ void PGrpFind::GetPolychronousGroups(SimulationVars &SimVars, OutputVariables &O
 
 				// Inserting the currently calculated PNG into the Map only if its 
 				// length exceeds a certain minimum threshold (in this case 1)
-				if (CurrentGrp.MaxLength > 4){
+				if (CurrentGrp.MaxLength >= SimVars.MinLengthThreshold){
 					CurrentGrp.IndexVector.push_back(CurrentGrp.SpikeSynapses.size());
 					PolychronousGroupMap.emplace(CombinationKey, CurrentGrp);
 				}

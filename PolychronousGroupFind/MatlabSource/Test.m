@@ -66,7 +66,7 @@ InputStruct.V = single(-65*ones(N,1));
 InputStruct.U = single(0.2*InputStruct.V);
 
 InputStruct.onemsbyTstep          = int32(4);
-InputStruct.NoOfms                = int32(15*60*1000);
+InputStruct.NoOfms                = int32(10*60*1000);
 InputStruct.DelayRange            = int32(DelayRange);
 InputStruct.StorageStepSize       = int32(20000);
 InputStruct.OutputControl         = strjoin(OutputOptions);
@@ -88,6 +88,13 @@ InputStruct.InitialState = getSingleState(StateVarsSparse, (60*8)*4000);
 
 InputStruct.onemsbyTstep          = int32(1);
 InputStruct.OutputFile            = 'PNGsin1000NeuronsWOProhib.mat';
+
+InputStruct.SpikingCurrentThresh = [];
+InputStruct.ZeroCurrentThresh    = [];
+InputStruct.MinWeightSyn         = [];
+InputStruct.InitialWeight        = single(8.0);
+InputStruct.MinLengthThreshold   = int32(5);
+InputStruct.MaxLengthThreshold   = int32(15);
 
 save(strcat(PNGFindingPath, '../Data/InputData.mat'), 'InputStruct');
 cd(strcat(PNGFindingPath, '../'));

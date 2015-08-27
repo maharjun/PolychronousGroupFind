@@ -111,10 +111,6 @@ struct SimulationVars{
 	MexVector<uint32_T> MaxLenInCurrIter;         // This is the vector  that stores  the Maximum length of the graph  (i.e.
 	                                              // Max Length for graph terminating at particular Neuron) upto the Neurons
 	                                              // which recieved current in the current time instant
-	
-	//MexVector<uint32_T> MaxLenInCurrIter;         // This is the vector in which,  all of the cells that correspond to neur-
-	//                                              // ons which fired in the  current instant contain the max Length upto the
-	//                                              // generation of that firing
 
 	// Creating Unordered Set and Map To store and process PNG
 	std::unordered_map<uint64_T, PolyChrNeuronGroup> PolychronousGroupMap;
@@ -125,15 +121,19 @@ struct SimulationVars{
 	int NExc;
 	int MExc;
 
+	// Compulsory Input Parameters
 	int onemsbyTstep;
 	int DelayRange;
+
 	int CurrentQIndex;
 	int isCurrentPNGRecurrent;
 
-	const float SpikingCurrentThresh;
-	const float ZeroCurrentThresh;
-	const float MinWeightSyn;
-	const float InitialWeight;
+	float SpikingCurrentThresh;
+	float ZeroCurrentThresh;
+	float MinWeightSyn;
+	float InitialWeight;
+	int   MinLengthThreshold;
+	int   MaxLengthThreshold;
 
 	int time;
 
@@ -157,10 +157,12 @@ struct SimulationVars{
 		MaxLengthofSpike(),
 		Iin(),
 
-		SpikingCurrentThresh(16.0f),
-		ZeroCurrentThresh(0.3f),
-		MinWeightSyn(8.0f),
-		InitialWeight(7.0f),
+		SpikingCurrentThresh (16.0f),
+		ZeroCurrentThresh    (0.3f) ,
+		MinWeightSyn         (8.0f) ,
+		InitialWeight        (7.0f) ,
+		MinLengthThreshold   (5)    ,
+		MaxLengthThreshold   (20)   ,
 
 		isCurrentPNGRecurrent(0),
 		time(0),
