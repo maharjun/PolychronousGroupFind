@@ -144,18 +144,19 @@ struct SimulationVars{
 	int NExc;
 	int MExc;
 
+	// Compulsory Input Parameters
 	int onemsbyTstep;
 	int DelayRange;
 	int CurrentQIndex;
 	int isCurrentPNGRecurrent;
 
-	const float SpikingCurrentThresh;
-	const float ZeroCurrentThresh;
-	const float MinWeightSyn;
-	const float InitialWeight;
-	const int RequiredConcurrency;
-	const float DelayedSpikeProb;
-	const float SpikeProbThreshold;
+	// Default Assigned Simulation Parameters
+	float MinWeightSyn;
+	int   RequiredConcurrency;
+	float DelayedSpikeProb;
+	float SpikeProbThreshold;
+	int   MinLengthThreshold;
+	int   MaxLengthThreshold;
 
 	int time;
 
@@ -180,13 +181,12 @@ struct SimulationVars{
 		SpikeState(),
 		ProbabilityofSpike(),
 
-		SpikingCurrentThresh(16.0f),
-		ZeroCurrentThresh(0.3f),
-		MinWeightSyn(8.0f),
-		InitialWeight(7.0f),
-		RequiredConcurrency(2),
-		DelayedSpikeProb(0.5),
-		SpikeProbThreshold(0.2),
+		MinWeightSyn        (8.0f),
+		RequiredConcurrency (2),
+		DelayedSpikeProb    (0.5),
+		SpikeProbThreshold  (0.2),
+		MinLengthThreshold  (5),
+		MaxLengthThreshold  (20),
 
 		isCurrentPNGRecurrent(0),
 		time(0),
@@ -238,7 +238,6 @@ struct OutputVariables{
 void PublishCurrentSpikes(SimulationVars &SimVars, PolyChrNeuronGroup &PNGCurrent);
 void ProcessArrivingSpikes(SimulationVars &SimVars);
 void StoreSpikes(SimulationVars &SimVars, bool isInitialCase);
-void CombinationRadixSort(SimulationVars &SimVars);
 void ResetIntermediateVars(SimulationVars &SimVars);
 void PerformOutput(SimulationVars &SimVars, OutputVariables &OutVars);
 inline float FindSpikingProb(

@@ -30,9 +30,18 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 	this->N = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "a"     , MexMemInputOps(true)));
 	this->M = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "NStart", MexMemInputOps(true)));
 
+	// Initializing compulsory Input Parameters
 	getInputfromStruct<int>(MatlabInputStruct, "onemsbyTstep", this->onemsbyTstep, 1, "is_required");
 	getInputfromStruct<int>(MatlabInputStruct, "DelayRange", this->DelayRange, 1, "is_required");
 	
+	// Giving Default values for Default assigned Simulation Parameters
+	this->MinWeightSyn        = 8.0f;
+	this->RequiredConcurrency = 2   ;
+	this->DelayedSpikeProb    = 0.5f;
+	this->SpikeProbThreshold  = 0.2f;
+	this->MinLengthThreshold  = 6;
+	this->MaxLengthThreshold  = 20;
+
 	float*      genFloatPtr[4];     // Generic float Pointers used around the place to access data
 	int*        genIntPtr[2];       // Generic int Pointers used around the place to access data
 	uint32_t*	genUIntPtr[1];		// Generic unsigned int Pointers used around the place to access data (generator bits)
@@ -60,6 +69,14 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 		2, "is_required", "required_size", M
 	);
 	
+	// Taking Input for Default assigned Simulation Parameters
+	getInputfromStruct<float>(MatlabInputStruct, "MinWeightSyn"       , this->MinWeightSyn       );
+	getInputfromStruct<int  >(MatlabInputStruct, "RequiredConcurrency", this->RequiredConcurrency);
+	getInputfromStruct<float>(MatlabInputStruct, "DelayedSpikeProb"   , this->DelayedSpikeProb   );
+	getInputfromStruct<float>(MatlabInputStruct, "SpikeProbThreshold" , this->SpikeProbThreshold );
+	getInputfromStruct<int  >(MatlabInputStruct, "MinLengthThreshold" , this->MinLengthThreshold );
+	getInputfromStruct<int  >(MatlabInputStruct, "MaxLengthThreshold" , this->MaxLengthThreshold );
+
 	this->FlippedExcNetwork.resize(0);
 	this->StrippedNetworkMapping.resize(0);
 
@@ -254,8 +271,6 @@ void PGrpFind::ProcessArrivingSpikes(SimulationVars &SimVars){
 	auto &ProdofInvIncomingProbs = SimVars.ProdofInvIncomingProbs;
 
 	auto &CurrentQIndex = SimVars.CurrentQIndex;
-	auto &ZeroCurrentThresh = SimVars.ZeroCurrentThresh;
-	auto &InitialWeight = SimVars.InitialWeight;
 	#pragma endregion
 
 	auto SpikeIterBeg = SpikeQueue[CurrentQIndex].begin();
@@ -302,16 +317,6 @@ void PGrpFind::ProcessArrivingSpikes(SimulationVars &SimVars){
 		}
 		CurrentContribSyn[CurrNEnd - 1].push_back(ActualSynapseInd); // Pushing current synapse into list of
 		                                                             // Contributing Synapses
-
-		//// Assigning Current
-		//if (SynapseInd < 0){ 
-		//	// For case of Initial spike release
-		//	Iin[CurrNEnd - 1] += InitialWeight;
-		//}
-		//else{
-		//	// For all other cases
-		//	Iin[CurrNEnd - 1] += CurrSynapse.Weight;
-		//}
 	}
 
 	// Clearing Current Vector of SpikeQueue and MaxLengthofSpike Queues
@@ -712,7 +717,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 	// recurrence) and determines the structure and apiking squence of the
 	// PNG created by the current combination of Neurons. The initial ite-
 	// ration has beed done outside the loop itself
-	while (!isSpikeQueueEmpty && isCurrentPNGRecurrent != 2 && PNGCurrent.MaxLength < 20){
+	while (!isSpikeQueueEmpty && isCurrentPNGRecurrent != 2 && PNGCurrent.MaxLength < SimVars.MaxLengthThreshold){
 
 		// Calling the functions to update current, process spikes, and analyse
 		// the generated  spikes for repetitions in  groups and to ward against
@@ -867,7 +872,7 @@ void PGrpFind::GetPolychronousGroups(SimulationVars &SimVars, OutputVariables &O
 
 				// Inserting the currently calculated PNG into the Map only if its 
 				// length exceeds a certain minimum threshold (in this case 1)
-				if (CurrentGrp.MaxLength > 5){
+				if (CurrentGrp.MaxLength >= SimVars.MinLengthThreshold){
 					CurrentGrp.IndexVector.push_back(CurrentGrp.SpikeSynapses.size());
 					PolychronousGroupMap.emplace(CombinationKey, CurrentGrp);
 				}
