@@ -71,7 +71,7 @@ InputStruct.DelayRange            = int32(DelayRange);
 InputStruct.StorageStepSize       = int32(20000);
 InputStruct.OutputControl         = strjoin(OutputOptions);
 InputStruct.StatusDisplayInterval = int32(8000);
-InputStruct.IExtGenState          = uint32(30);
+InputStruct.InitialState.IExtGenState = uint32(30);
 
 InputStruct.OutputFile = 'SimResults1000DebugSparseLong.mat';
 save('../../../Polychronization/TimeDelNetSim/Data/InputData.mat', 'InputStruct');
