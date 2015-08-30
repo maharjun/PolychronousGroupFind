@@ -15,6 +15,10 @@ typedef mxArray* mxArrayPtr;
 int main(){
 	// NOTE THAT THERE IS NO DATA VALIDATION AS THIS IS EXPECTED TO HAVE 
 	// BEEN DONE IN THE MATLAB SIDE OF THE INTERFACE TO THIS MEX FUNCTION
+
+	// Opening Memory Usage Account for 1.5GB
+	auto MemAccountKey = MemCounter::OpenMemAccount(size_t(3) << 29);
+
 	mxArrayPtr InputArray = nullptr,
 		OutputArray = nullptr;
 
@@ -76,6 +80,10 @@ int main(){
 
 	mxDestroyArray(InputArray);
 	mxDestroyArray(OutputArray);
+
+	// Closing Memory Usage Account
+	MemCounter::CloseMemAccount(MemAccountKey);
+
 	system("pause");
 	return 0;
 }
