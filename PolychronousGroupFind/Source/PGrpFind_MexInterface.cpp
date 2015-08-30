@@ -7,64 +7,11 @@
 #include <type_traits>
 #include "..\Headers\Network.hpp"
 #include "..\..\MexMemoryInterfacing\Headers\MexMem.hpp"
+#include "..\..\MexMemoryInterfacing\Headers\GenericMexIO.hpp"
 #include "..\Headers\PGrpFind_Header.hpp"
 
 
 using namespace std;
-
-template<typename T> mxArray * assignmxArray(T &ScalarOut, mxClassID ClassID){
-
-	mxArray * ReturnPointer;
-	if (is_arithmetic<T>::value){
-		ReturnPointer = mxCreateNumericMatrix_730(1, 1, ClassID, mxREAL);
-		*reinterpret_cast<T *>(mxGetData(ReturnPointer)) = ScalarOut;
-	}
-	else{
-		ReturnPointer = mxCreateNumericMatrix_730(0, 0, ClassID, mxREAL);
-	}
-
-	return ReturnPointer;
-}
-
-template<typename T> mxArray * assignmxArray(MexMatrix<T> &VectorOut, mxClassID ClassID){
-
-	mxArray * ReturnPointer = mxCreateNumericMatrix_730(0, 0, ClassID, mxREAL);
-	if (VectorOut.ncols() && VectorOut.nrows()){
-		mxSetM(ReturnPointer, VectorOut.ncols());
-		mxSetN(ReturnPointer, VectorOut.nrows());
-		mxSetData(ReturnPointer, VectorOut.releaseArray());
-	}
-
-	return ReturnPointer;
-}
-
-template<typename T> mxArray * assignmxArray(MexVector<T> &VectorOut, mxClassID ClassID){
-
-	mxArray * ReturnPointer = mxCreateNumericMatrix_730(0, 0, ClassID, mxREAL);
-	if (VectorOut.size()){
-		mxSetM(ReturnPointer, VectorOut.size());
-		mxSetN(ReturnPointer, 1);
-		mxSetData(ReturnPointer, VectorOut.releaseArray());
-	}
-	return ReturnPointer;
-}
-
-template<typename T> mxArray * assignmxArray(MexVector<MexVector<T> > &VectorOut, mxClassID ClassID){
-
-	mxArray * ReturnPointer;
-	if (VectorOut.size()){
-		ReturnPointer = mxCreateCellMatrix(VectorOut.size(), 1);
-
-		size_t VectVectSize = VectorOut.size();
-		for (int i = 0; i < VectVectSize; ++i){
-			mxSetCell(ReturnPointer, i, assignmxArray(VectorOut[i], ClassID));
-		}
-	}
-	else{
-		ReturnPointer = mxCreateCellMatrix_730(0, 0);
-	}
-	return ReturnPointer;
-}
 
 mxArray * putOutputToMatlabStruct(PGrpFind::OutputVariables &Output){
 	const char *FieldNames[] = {
@@ -124,6 +71,9 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]){
 	//  9. onemsbyTstep
 	// 10. DelayRange
 
+	// Opening Memory Usage Account of 1.5GB
+	auto MemAccountKey = MemCounter::OpenMemAccount(size_t(3) << 29);
+
 	PGrpFind::SimulationVars SimVars(prhs[0]);
 
 	// Declaring Output Vectors
@@ -148,19 +98,12 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]){
 	}
 
 	chrono::system_clock::time_point TEnd = chrono::system_clock::now();
-#ifdef MEX_LIB
-	mexPrintf("The Time taken = %d milliseconds\n", chrono::duration_cast<chrono::milliseconds>(TEnd - TStart).count());
-	mexEvalString("drawnow");
-#elif defined MEX_EXE
-	printf("The Time taken = %d milliseconds\n", chrono::duration_cast<chrono::milliseconds>(TEnd - TStart).count());
-#endif
+	WriteOutput("The Time taken = %d milliseconds\n", chrono::duration_cast<chrono::milliseconds>(TEnd - TStart).count());
 	mwSize StructArraySize[2] = { 1, 1 };
 
 	plhs[0] = putOutputToMatlabStruct(OutVars);
-#ifdef MEX_LIB
-	mexPrintf("Finished Mex Output\n");
-	mexEvalString("drawnow");
-#elif defined MEX_EXE
-	printf("Finished Mex Output\n");
-#endif
+	WriteOutput("Finished Mex Output\n");
+
+	// Closing Memory Usage Account
+	MemCounter::CloseMemAccount(MemAccountKey);
 }
