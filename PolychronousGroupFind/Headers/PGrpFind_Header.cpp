@@ -696,7 +696,7 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 		
 		// register spikes for all max delay value contributing synapses
 		while (NeuronCursor < 3 && SortedSynapseSet[2 - NeuronCursor].DelayinTsteps == MaxDelay) {
-			int CurrInitNeuron = SortedSynapseSet[2].NStart;
+			int CurrInitNeuron = SortedSynapseSet[2 - NeuronCursor].NStart;
 			// Publishing this spike into PNGCurrent as it is not done during
 			// the publish spikes procedure
 			PNGCurrent.SpikeNeurons.push_back(CurrInitNeuron);
@@ -708,10 +708,10 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 			MaxLenInCurrIter[CurrInitNeuron - 1] = 0;
 			SpikingProbsCurr[CurrInitNeuron - 1] = 1.0f;
 			StoreSpikes(SimVars, false);
-			time++;
-			CurrentQIndex = (CurrentQIndex + 1) % QueueSize;
 			NeuronCursor++;
 		}
+		time++;
+		CurrentQIndex = (CurrentQIndex + 1) % QueueSize;
 	}
 	// initializing HasSpiked, CurrentNonZeroIinNeurons, CurrentContribSyn
 	// These are  expected to  be aready in a  clear state so  no need for 
