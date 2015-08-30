@@ -631,20 +631,25 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 	// initial iteration which releases the spike of the PreSynaptic neuron
 	// connected to the synapse with the highest delay
 	{
-		int CurrInitNeuron = SortedSynapseSet[2].NStart;
-		// Publishing this spike into PNGCurrent as it is not done during
-		// the publish spikes procedure
-		PNGCurrent.SpikeNeurons.push_back(CurrInitNeuron);
-		PNGCurrent.SpikeTimings.push_back(time);
-		PNGCurrent.IndexVector.push_back(PNGCurrent.SpikeSynapses.size());
+		int MaxDelay = SortedSynapseSet[2].DelayinTsteps;
+		
+		// register spikes for all max delay value contributing synapses
+		while (NeuronCursor < 3 && SortedSynapseSet[2 - NeuronCursor].DelayinTsteps == MaxDelay) {
+			int CurrInitNeuron = SortedSynapseSet[2].NStart;
+			// Publishing this spike into PNGCurrent as it is not done during
+			// the publish spikes procedure
+			PNGCurrent.SpikeNeurons.push_back(CurrInitNeuron);
+			PNGCurrent.SpikeTimings.push_back(time);
+			PNGCurrent.IndexVector.push_back(PNGCurrent.SpikeSynapses.size());
 
-		HasSpikedNow.push_back(CurrInitNeuron);
-		// Initializind MaxLenInCurrIter for this neuron
-		MaxLenInCurrIter[CurrInitNeuron - 1] = 0;
-		StoreSpikes(SimVars, false);
-		time++;
-		CurrentQIndex = (CurrentQIndex + 1) % QueueSize;
-		NeuronCursor++;
+			HasSpikedNow.push_back(CurrInitNeuron);
+			// Initializind MaxLenInCurrIter for this neuron
+			MaxLenInCurrIter[CurrInitNeuron - 1] = 0;
+			StoreSpikes(SimVars, false);
+			time++;
+			CurrentQIndex = (CurrentQIndex + 1) % QueueSize;
+			NeuronCursor++;
+		}
 	}
 	// initializing HasSpiked, CurrentNonZeroIinNeurons, CurrentContribSyn
 	// These are  expected to  be aready in a  clear state so  no need for 
@@ -666,22 +671,25 @@ void PGrpFind::AnalysePNGofCurrentCombination(
 		PublishCurrentSpikes(SimVars, PNGCurrent);
 		//AnalyseGroups(SimVars, CombinationKey);
 		ResetIntermediateVars(SimVars);
-		StoreSpikes(SimVars, false);
 		while (NeuronCursor < 3 && time == (SortedSynapseSet[2].DelayinTsteps - SortedSynapseSet[2 - NeuronCursor].DelayinTsteps)){
-
+			// Register Input Spikes for this time instant
 			int CurrInitNeuron = SortedSynapseSet[2 - NeuronCursor].NStart;
-			// Publishing this spike into PNGCurrent as it is not done during
-			// the publish spikes procedure
-			PNGCurrent.SpikeNeurons.push_back(CurrInitNeuron);
-			PNGCurrent.SpikeTimings.push_back(time);
-			PNGCurrent.IndexVector.push_back(PNGCurrent.SpikeSynapses.size());
+			
+			// If the neuron hasn't already spiked in the current time instant
+			if (std::find(HasSpikedNow.begin(), HasSpikedNow.end(), CurrInitNeuron) == HasSpikedNow.end()) {
+				// Publishing this spike into PNGCurrent as it is not done during
+				// the publish spikes procedure
+				PNGCurrent.SpikeNeurons.push_back(CurrInitNeuron);
+				PNGCurrent.SpikeTimings.push_back(time);
+				PNGCurrent.IndexVector.push_back(PNGCurrent.SpikeSynapses.size());
 
-			// Initializind MaxLenInCurrIter for this neuron
-			MaxLenInCurrIter[CurrInitNeuron - 1] = 0;
-			HasSpikedNow.push_back(CurrInitNeuron);
-			StoreSpikes(SimVars, false);
+				// Initializind MaxLenInCurrIter for this neuron
+				MaxLenInCurrIter[CurrInitNeuron - 1] = 0;
+				HasSpikedNow.push_back(CurrInitNeuron);
+			}
 			NeuronCursor++;
 		}
+		StoreSpikes(SimVars, false);
 
 		// Temporal Variable Update
 		time++;
