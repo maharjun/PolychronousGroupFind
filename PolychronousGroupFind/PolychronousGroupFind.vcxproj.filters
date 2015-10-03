@@ -27,7 +27,7 @@
     <ClCompile Include="Headers\PGrpFind_Header.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\MexMemoryInterfacing\Headers\MexMem.cpp">
+    <ClCompile Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\MexMem.cpp">
       <Filter>Header Files\MexMemoryInterfacing</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,13 +35,13 @@
     <ClInclude Include="Headers\PGrpFind_Header.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MexMemoryInterfacing\Headers\GenericMexIO.hpp">
+    <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\GenericMexIO.hpp">
       <Filter>Header Files\MexMemoryInterfacing</Filter>
     </ClInclude>
-    <ClInclude Include="..\MexMemoryInterfacing\Headers\LambdaToFunction.hpp">
+    <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\LambdaToFunction.hpp">
       <Filter>Header Files\MexMemoryInterfacing</Filter>
     </ClInclude>
-    <ClInclude Include="..\MexMemoryInterfacing\Headers\MexMem.hpp">
+    <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\MexMem.hpp">
       <Filter>Header Files\MexMemoryInterfacing</Filter>
     </ClInclude>
   </ItemGroup>

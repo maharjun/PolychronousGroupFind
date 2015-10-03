@@ -69,6 +69,22 @@
     <Import Project="PropertySheets\MATLABx64Mex_Lib.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(AsSubProgram)'!='true'">
+    <ExtLibDirs>.</ExtLibDirs>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(AsSubProgram)'=='true'">
+    <ExtLibDirs>..</ExtLibDirs>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(AsSubProgram)'=='true'">
+    <ClCompile>
+      <PreprocessorDefinitions>POLYCHRONOUS_GROUP_FIND_AS_SUB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+	  <PreprocessorDefinitions>MEX_MEMORY_INTERFACING_AS_SUB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+	</ClCompile>
+  </ItemDefinitionGroup>
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Exe|x64'">
     <ClCompile>
@@ -119,7 +135,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\MexMemoryInterfacing\Headers\MexMem.cpp" />
+    <ClCompile Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\MexMem.cpp" />
     <ClCompile Include="Headers\PGrpFind_Header.cpp" />
     <ClCompile Include="Source\PGrpFind_ExeInterface.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_Lib|x64'">true</ExcludedFromBuild>
@@ -131,9 +147,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\MexMemoryInterfacing\Headers\GenericMexIO.hpp" />
-    <ClInclude Include="..\MexMemoryInterfacing\Headers\LambdaToFunction.hpp" />
-    <ClInclude Include="..\MexMemoryInterfacing\Headers\MexMem.hpp" />
+    <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\GenericMexIO.hpp" />
+    <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\LambdaToFunction.hpp" />
+    <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\MexMem.hpp" />
     <ClInclude Include="Headers\PGrpFind_Header.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
