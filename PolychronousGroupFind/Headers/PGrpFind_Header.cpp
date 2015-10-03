@@ -6,10 +6,21 @@
 #include <stdint.h>
 #include <mex.h>
 
+#if defined POLYCHRONOUS_GROUP_FIND_AS_SUB 
+	#define HEADER_PATHS_PGF ..
+#elif !defined HEADER_PATHS_PGF
+	#define HEADER_PATHS_PGF .
+#endif
+
+#define SETQUOTE(A) #A
+#define JOIN_STRING(A,B,C) SETQUOTE(A##B##C)
+#define JOIN_LIB_PATH(PRE, CENT, POST) JOIN_STRING(PRE, CENT, POST)
+
+
 #include "PGrpFind_Header.hpp"
-#include "..\..\MexMemoryInterfacing\Headers\MexMem.hpp"
-#include "..\..\MexMemoryInterfacing\Headers\GenericMexIO.hpp"
-#include "..\..\MexMemoryInterfacing\Headers\LambdaToFunction.hpp"
+#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\MexMem.hpp)
+#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\GenericMexIO.hpp)
+#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\LambdaToFunction.hpp)
 
 using namespace PGrpFind;
 
