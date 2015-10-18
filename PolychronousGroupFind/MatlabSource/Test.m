@@ -16,6 +16,7 @@ PNGFindingPath = pwd;
 PNGFindingPath = strcat(PNGFindingPath, '/');
 rmpath(strcat(PNGFindingPath, '../../x64/Debug_Lib/'));
 addpath(strcat(PNGFindingPath, '../../x64/Release_Lib/'));
+addpath(strcat(PNGFindingPath, '../../MexMemoryInterfacing/MatlabSource/'));
 
 PolychronizationPath = '../Polychronization/';
 cd(strcat(PNGFindingPath, '../../', PolychronizationPath, 'TimeDelNetSim/MatlabSource'));
@@ -101,15 +102,13 @@ cd(strcat(PNGFindingPath, '../'));
 !"..\x64\Release_Exe\PolychronousGroupFind.exe"
 cd(strcat(PNGFindingPath, '../../', PolychronizationPath, 'TimeDelNetSim/MatlabSource'));
 
-load(strcat(PNGFindingPath, '../Data/', InputStruct.OutputFile));
-PNGList = OutputVars;
-clear OutputVars;
-
 % PNGList = PolychronousGroupFind(InputStruct);
 % clear functions;
-%% Changing directories
-
+%% Changing directories and loading PNG's
 cd(PNGFindingPath);
+load(strcat('../Data/', InputStruct.OutputFile));
+PNGList = PNGList2FlatCellArray(OutputVars);
+clear OutputVars;
 
 %% Process Data
 

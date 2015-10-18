@@ -21,14 +21,15 @@
 #include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\MexMem.hpp)
 #include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\GenericMexIO.hpp)
 #include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\LambdaToFunction.hpp)
+#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTree.hpp)
 
 using namespace PGrpFind;
 
 PGrpFind::OutputVariables::OutputVariables():
-	PNGSpikeNeuronsVect(),
-	PNGSpikeTimingsVect(),
-	PNGSpikeSynapsesVect(),
-	PNGIndexVectorVect(),
+	PNGSpikeNeuronsVect (1),
+	PNGSpikeTimingsVect (1),
+	PNGSpikeSynapsesVect(1),
+	PNGIndexVectorVect  (1),
 	PNGMaxLengthVect(),
 	PNGCombinationKeyVect(){}
 
@@ -512,29 +513,23 @@ void PGrpFind::PerformOutput(SimulationVars &SimVars, OutputVariables &OutVars){
 	auto MapIterEnd = PolychronousGroupMap.end();
 
 	WriteOutput("Starting Conversion to OutputVars\n");
-	for (auto Iter = MapIterBeg; Iter != MapIterEnd; ++Iter){
-		
-		// Trimming Vectors
-		Iter->second.SpikeNeurons.trim();
-		Iter->second.SpikeTimings.trim();
-		Iter->second.SpikeSynapses.trim();
-		Iter->second.IndexVector.trim();
-
+	for (auto Iter = MapIterBeg; Iter != MapIterEnd; ++Iter) {
 		// Outputting SpikeNeurons -> PNGSpikeNeuronsVect
-		OutVars.PNGSpikeNeuronsVect.push_back(MexVector<int>());
-		OutVars.PNGSpikeNeuronsVect.last().swap(Iter->second.SpikeNeurons);
-
+		OutVars.PNGSpikeNeuronsVect.push_back(std::move(Iter->second.SpikeNeurons));
+	}
+	for (auto Iter = MapIterBeg; Iter != MapIterEnd; ++Iter) {
 		// Outputting SpikeTimings -> PNGSpikeTimingsVect
-		OutVars.PNGSpikeTimingsVect.push_back(MexVector<int>());
-		OutVars.PNGSpikeTimingsVect.last().swap(Iter->second.SpikeTimings);
-
+		OutVars.PNGSpikeTimingsVect.push_back(std::move(Iter->second.SpikeTimings));
+	}
+	for (auto Iter = MapIterBeg; Iter != MapIterEnd; ++Iter) {
 		// Outputting SpikeSynapses -> PNGSpikeSynapsesVect
-		OutVars.PNGSpikeSynapsesVect.push_back(MexVector<int>());
-		OutVars.PNGSpikeSynapsesVect.last().swap(Iter->second.SpikeSynapses);
-		
+		OutVars.PNGSpikeSynapsesVect.push_back(std::move(Iter->second.SpikeSynapses));
+	}
+	for (auto Iter = MapIterBeg; Iter != MapIterEnd; ++Iter) {
 		// Outputting IndexVector -> PNGIndexVectorVect
-		OutVars.PNGIndexVectorVect.push_back(MexVector<int>());
-		OutVars.PNGIndexVectorVect.last().swap(Iter->second.IndexVector);
+		OutVars.PNGIndexVectorVect.push_back(std::move(Iter->second.IndexVector));
+	}
+	for (auto Iter = MapIterBeg; Iter != MapIterEnd; ++Iter){
 
 		// Outputting MaxLen -> PNGMaxLengthVect
 		OutVars.PNGMaxLengthVect.push_back(Iter->second.MaxLength);

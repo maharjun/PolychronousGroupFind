@@ -16,6 +16,9 @@
     <Filter Include="Header Files\MexMemoryInterfacing">
       <UniqueIdentifier>{d6a20007-8446-4e45-b3c3-c4269f42567c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\MexMemoryInterfacing\FlatVectTree">
+      <UniqueIdentifier>{8e2c708d-1869-4586-9ef1-600e8dece63a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\PGrpFind_ExeInterface.cpp">
@@ -44,5 +47,19 @@
     <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\MexMem.hpp">
       <Filter>Header Files\MexMemoryInterfacing</Filter>
     </ClInclude>
+    <ClInclude Include="..\MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTree.hpp">
+      <Filter>Header Files\MexMemoryInterfacing\FlatVectTree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\MexMemoryInterfacing\Headers\FlatVectTree\VectTreeInfo.hpp">
+      <Filter>Header Files\MexMemoryInterfacing\FlatVectTree</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTree.inl">
+      <Filter>Header Files\MexMemoryInterfacing\FlatVectTree</Filter>
+    </None>
+    <None Include="..\MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTreeIO.inl">
+      <Filter>Header Files\MexMemoryInterfacing\FlatVectTree</Filter>
+    </None>
   </ItemGroup>
 </Project>

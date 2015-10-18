@@ -82,8 +82,8 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-	  <PreprocessorDefinitions>MEX_MEMORY_INTERFACING_AS_SUB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-	</ClCompile>
+      <PreprocessorDefinitions>MEX_MEMORY_INTERFACING_AS_SUB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_Exe|x64'">
@@ -150,7 +150,13 @@
     <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\GenericMexIO.hpp" />
     <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\LambdaToFunction.hpp" />
     <ClInclude Include="..\$(ExtLibDirs)\MexMemoryInterfacing\Headers\MexMem.hpp" />
+    <ClInclude Include="..\MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTree.hpp" />
+    <ClInclude Include="..\MexMemoryInterfacing\Headers\FlatVectTree\VectTreeInfo.hpp" />
     <ClInclude Include="Headers\PGrpFind_Header.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTree.inl" />
+    <None Include="..\MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTreeIO.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
