@@ -44,16 +44,16 @@ mxArray * putOutputToMatlabStruct(PGrpFind::OutputVariables &Output){
 	mxArray * ReturnPointer = mxCreateStructArray_730(2, StructArraySize, NFields, FieldNames);
 
 	// Assigning PNGSpikeNeuronsVect
-	mxSetField(ReturnPointer, 0, "PNGSpikeNeuronsVect"  , assignmxArray(Output.PNGSpikeNeuronsVect  , mxINT32_CLASS));
+	mxSetField(ReturnPointer, 0, "PNGSpikeNeuronsVect"  , assignmxArray(Output.PNGSpikeNeuronsVect ));
 
 	// Assigning PNGSpikeTimingsVect
-	mxSetField(ReturnPointer, 0, "PNGSpikeTimingsVect"  , assignmxArray(Output.PNGSpikeTimingsVect  , mxINT32_CLASS));
+	mxSetField(ReturnPointer, 0, "PNGSpikeTimingsVect"  , assignmxArray(Output.PNGSpikeTimingsVect ));
 
 	// Assigning PNGSpikeSynapsesVect
-	mxSetField(ReturnPointer, 0, "PNGSpikeSynapsesVect" , assignmxArray(Output.PNGSpikeSynapsesVect , mxINT32_CLASS));
+	mxSetField(ReturnPointer, 0, "PNGSpikeSynapsesVect" , assignmxArray(Output.PNGSpikeSynapsesVect));
 
 	// Assigning PNGIndexVectorVect
-	mxSetField(ReturnPointer, 0, "PNGIndexVectorVect"   , assignmxArray(Output.PNGIndexVectorVect   , mxINT32_CLASS));
+	mxSetField(ReturnPointer, 0, "PNGIndexVectorVect"   , assignmxArray(Output.PNGIndexVectorVect  ));
 
 	// Assigning PNGCombinationKeyVect
 	mxSetField(ReturnPointer, 0, "PNGCombinationKeyVect", assignmxArray(Output.PNGCombinationKeyVect, mxUINT64_CLASS));

@@ -21,6 +21,7 @@
 
 #include "..\Headers\Network.hpp"
 #include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\MexMem.hpp)
+#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\FlatVectTree\FlatVectTree.hpp)
 
 namespace PGrpFind{
 
@@ -51,11 +52,11 @@ struct CombinationStruct{
 };
 
 struct PolyChrNeuronGroup{
-	MexVector<int> SpikeNeurons;    // SpikeNeurons[i] records the (i+1)th spike in the PNG which is
-	MexVector<int> SpikeTimings;    // recorded to have happened at time instant SpikeTimings[i]
-	MexVector<int> SpikeSynapses;   // This Stores the Set of Synapses contributing to the above stored spike as
-	MexVector<int> IndexVector;     // SpikeSynapses[IndexVector[i]:IndexVector[i+1]] gives the synapses which 
-	                                // contribute to the the (i+1)th spike
+	MexVector<int, CAllocator> SpikeNeurons;    // SpikeNeurons[i] records the (i+1)th spike in the PNG which is
+	MexVector<int, CAllocator> SpikeTimings;    // recorded to have happened at time instant SpikeTimings[i]
+	MexVector<int, CAllocator> SpikeSynapses;   // This Stores the Set of Synapses contributing to the above stored spike as
+	MexVector<int, CAllocator> IndexVector;     // SpikeSynapses[IndexVector[i]:IndexVector[i+1]] gives the synapses which 
+	                                            // contribute to the the (i+1)th spike
 	uint32_T MaxLength;
 
 	PolyChrNeuronGroup() :
@@ -234,10 +235,10 @@ struct SimulationVars{
 };
 
 struct OutputVariables{
-	MexVector<MexVector<int> > PNGSpikeTimingsVect;  //	VectVect grouping of PolyChrNeuronGroup::SpikeTimings;
-	MexVector<MexVector<int> > PNGSpikeNeuronsVect;	 //	VectVect grouping of PolyChrNeuronGroup::SpikeSynapses;
-	MexVector<MexVector<int> > PNGSpikeSynapsesVect; //	VectVect grouping of PolyChrNeuronGroup::SpikeNeurons;
-	MexVector<MexVector<int> > PNGIndexVectorVect;	 //	VectVect grouping of PolyChrNeuronGroup::IndexVector;
+	FlatVectTree<int> PNGSpikeTimingsVect;   //	VectVect grouping of PolyChrNeuronGroup::SpikeTimings;
+	FlatVectTree<int> PNGSpikeNeuronsVect;	 //	VectVect grouping of PolyChrNeuronGroup::SpikeSynapses;
+	FlatVectTree<int> PNGSpikeSynapsesVect;  //	VectVect grouping of PolyChrNeuronGroup::SpikeNeurons;
+	FlatVectTree<int> PNGIndexVectorVect;	 //	VectVect grouping of PolyChrNeuronGroup::IndexVector;
 	MexVector<uint32_t> PNGMaxLengthVect;			 // Vector   grouping of PolyChrNeuronGroup::MaxLength;
 
 	MexVector<uint64_t> PNGCombinationKeyVect; // PNGCombination[i] stores the combination key of the (i+1)th stored PNG
