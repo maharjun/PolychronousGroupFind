@@ -43,8 +43,8 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 	this->M = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "NStart", MexMemInputOps(true)));
 
 	// Initializing compulsory Input Parameters
-	getInputfromStruct<int>(MatlabInputStruct, "onemsbyTstep", this->onemsbyTstep, 1, "is_required");
-	getInputfromStruct<int>(MatlabInputStruct, "DelayRange", this->DelayRange, 1, "is_required");
+	getInputfromStruct<int>(MatlabInputStruct, "onemsbyTstep", this->onemsbyTstep, getInputOps(1, "is_required"));
+	getInputfromStruct<int>(MatlabInputStruct, "DelayRange", this->DelayRange, getInputOps(1, "is_required"));
 	
 	// Giving Default values for Default assigned Simulation Parameters
 	this->SpikingCurrentThresh = 16.0f;
@@ -68,7 +68,7 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 			CurrNeuron.c = *reinterpret_cast<float *>(StructMembers["c"].first);
 			CurrNeuron.d = *reinterpret_cast<float *>(StructMembers["d"].first);
 		}),
-		2, "is_required", "required_size", N);
+		getInputOps(2, "is_required", "required_size", N));
 
 	// Initializing network (Synapse) specification structure array Network
 	getInputfromStruct(MatlabInputStruct, "NStart NEnd InitialState.Weight Delay", this->Network, 
@@ -78,7 +78,7 @@ void SimulationVars::initialize(mxArray *MatlabInputStruct){
 			CurrNeuron.Weight        = *reinterpret_cast<float *>(StructMembers["InitialState.Weight"].first);
 			CurrNeuron.DelayinTsteps = *reinterpret_cast<float *>(StructMembers["Delay"].first) * onemsbyTstep + 0.5f;
 		}),
-		2, "is_required", "required_size", M
+		getInputOps(2, "is_required", "required_size", M)
 	);
 	
 	// Taking Input for Default assigned Simulation Parameters
