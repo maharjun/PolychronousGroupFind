@@ -56,10 +56,10 @@ mxArray * putOutputToMatlabStruct(PGrpFind::OutputVariables &Output){
 	mxSetField(ReturnPointer, 0, "PNGIndexVectorVect"   , assignmxArray(Output.PNGIndexVectorVect  ));
 
 	// Assigning PNGCombinationKeyVect
-	mxSetField(ReturnPointer, 0, "PNGCombinationKeyVect", assignmxArray(Output.PNGCombinationKeyVect, mxUINT64_CLASS));
+	mxSetField(ReturnPointer, 0, "PNGCombinationKeyVect", assignmxArray(Output.PNGCombinationKeyVect));
 
 	// Assigning PNGMaxLengthVect
-	mxSetField(ReturnPointer, 0, "PNGMaxLengthVect"     , assignmxArray(Output.PNGMaxLengthVect     , mxUINT32_CLASS));
+	mxSetField(ReturnPointer, 0, "PNGMaxLengthVect"     , assignmxArray(Output.PNGMaxLengthVect     ));
 
 	return ReturnPointer;
 }
