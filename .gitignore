@@ -51,6 +51,7 @@ Temporary Items
 
 # un-ignore submodules
 !/MexMemoryInterfacing
+!/CMakeModules
 
 !/PolychronousGroupFind
 /PolychronousGroupFind/*

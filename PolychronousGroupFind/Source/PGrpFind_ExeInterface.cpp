@@ -6,21 +6,18 @@
 #include <chrono>
 #include <iostream>
 
-#if defined POLYCHRONOUS_GROUP_FIND_AS_SUB 
-	#define HEADER_PATHS_PGF ..
-#elif !defined HEADER_PATHS_PGF
-	#define HEADER_PATHS_PGF .
-#endif
-
-#define SETQUOTE(A) #A
-#define JOIN_STRING(A,B,C) SETQUOTE(A##B##C)
-#define JOIN_LIB_PATH(PRE, CENT, POST) JOIN_STRING(PRE, CENT, POST)
-
-#include "..\Source\PGrpFind_MexInterface.cpp"
-#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\MexMem.hpp)
-
+#include "../Source/PGrpFind_MexInterface.cpp"
+#include <MexMemoryInterfacing/Headers/MexMem.hpp>
 
 using namespace std;
+
+#ifdef _MSC_VER
+#  define STRCAT_SAFE(a,b,c) strcat_s((a),(b),(c))
+#elif defined __GNUC__
+#  if (__GNUC__ > 5) || (__GNUC__ == 5)
+#    define STRCAT_SAFE(a,b,c) strncat((a),(c),(b))
+#  endif
+#endif
 
 typedef mxArray* mxArrayPtr;
 
@@ -41,8 +38,8 @@ int main(){
 	InputArray = matGetVariable(InputFilePtr, "InputStruct");
 
 	mxGetString_730(mxGetField(InputArray, 0, "OutputFile"), OutFileName, 256);
-	strcat_s(OutputFilePath, 256, "Data/");
-	strcat_s(OutputFilePath, 256, OutFileName);
+	STRCAT_SAFE(OutputFilePath, 256, "Data/");
+	STRCAT_SAFE(OutputFilePath, 256, OutFileName);
 
 	matClose(InputFilePtr);
 	if (InputArray == nullptr){
