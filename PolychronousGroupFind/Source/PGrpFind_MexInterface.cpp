@@ -54,7 +54,7 @@ mxArray * putOutputToMatlabStruct(PGrpFind::OutputVariables &Output){
 	return ReturnPointer;
 }
 
-void mexFunction(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]){
+void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[]){
 	// NOTE THAT THERE IS NO DATA VALIDATION AS THIS IS EXPECTED TO HAVE 
 	// BEEN DONE IN THE MATLAB SIDE OF THE INTERFACE TO THIS MEX FUNCTION
 

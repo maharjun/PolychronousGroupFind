@@ -22,11 +22,11 @@ PGrpFind::OutputVariables::OutputVariables():
 	PNGMaxLengthVect(),
 	PNGCombinationKeyVect(){}
 
-SimulationVars::SimulationVars(mxArray *MatlabInputStruct): SimulationVars(){
+SimulationVars::SimulationVars(const mxArray *MatlabInputStruct): SimulationVars(){
 	initialize(MatlabInputStruct);
 }
 
-void SimulationVars::initialize(mxArray *MatlabInputStruct){
+void SimulationVars::initialize(const mxArray *MatlabInputStruct){
 
 	this->N = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "a"     , MexMemInputOps(true)));
 	this->M = mxGetNumberOfElements(getValidStructField(MatlabInputStruct, "NStart", MexMemInputOps(true)));
