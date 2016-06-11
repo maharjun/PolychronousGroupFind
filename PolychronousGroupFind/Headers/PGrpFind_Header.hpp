@@ -185,9 +185,9 @@ struct SimulationVars{
 		PolychronousGroupMap(),
 		ProhibitedCombinationSet(){}
 
-	SimulationVars(mxArray *InputMATLABStruct);
+	SimulationVars(const mxArray *InputMATLABStruct);
 
-	void initialize(mxArray *InputMATLABStruct);
+	void initialize(const mxArray *InputMATLABStruct);
 	void initFlippedExcNetwork();
 	void initNExcMExc();
 	void initPreSynSectionArrays();

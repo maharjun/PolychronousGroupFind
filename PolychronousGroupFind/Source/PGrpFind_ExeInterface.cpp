@@ -46,8 +46,8 @@ int main(){
 		cout << "TimeDelNetSimEXE:InvInpVarName", "The variable name in the mex file InputData must be InputStruct";
 	}
 
-	mxArrayPtr lhs[1] = { nullptr },
-		rhs[1] = { InputArray };
+	mxArrayPtr lhs[1] = { nullptr };
+	const mxArray* rhs[1] = { InputArray };
 
 	OutputFilePtr = matOpen(OutputFilePath, "r");
 	while (OutputFilePtr){
