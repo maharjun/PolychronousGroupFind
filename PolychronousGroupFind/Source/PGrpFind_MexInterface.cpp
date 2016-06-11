@@ -6,21 +6,11 @@
 #include <chrono>
 #include <type_traits>
 
-#if defined POLYCHRONOUS_GROUP_FIND_AS_SUB 
-	#define HEADER_PATHS_PGF ..
-#elif !defined HEADER_PATHS_PGF
-	#define HEADER_PATHS_PGF .
-#endif
+#include "../Headers/Network.hpp"
+#include "../Headers/PGrpFind_Header.hpp"
 
-#define SETQUOTE(A) #A
-#define JOIN_STRING(A,B,C) SETQUOTE(A##B##C)
-#define JOIN_LIB_PATH(PRE, CENT, POST) JOIN_STRING(PRE, CENT, POST)
-
-#include "..\Headers\Network.hpp"
-#include "..\Headers\PGrpFind_Header.hpp"
-
-#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\MexMem.hpp)
-#include JOIN_LIB_PATH(..\..\, HEADER_PATHS_PGF, \MexMemoryInterfacing\Headers\GenericMexIO.hpp)
+#include <MexMemoryInterfacing/Headers/MexMem.hpp>
+#include <MexMemoryInterfacing/Headers/GenericMexIO.hpp>
 
 
 using namespace std;
@@ -101,7 +91,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, mxArray *prhs[]){
 		if (A == ExOps::EXCEPTION_MEM_FULL){
 		#ifdef MEX_LIB
 			char OutputString[256];
-			sprintf_s(OutputString, 256, "Mem Limit of %lld MB Exceeded\n", (MemCounter::MemUsageLimit) >> 20);
+			WriteOutput("Mem Limit of %lld MB Exceeded\n", (MemCounter::MemUsageLimit) >> 20);
 			mexErrMsgIdAndTxt("CppSimException:MemOverFlow", OutputString);
 		#elif defined MEX_EXE
 			throw A;
