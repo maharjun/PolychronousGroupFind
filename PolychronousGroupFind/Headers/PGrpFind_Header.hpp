@@ -138,6 +138,9 @@ struct SimulationVars{
 
 	int time;
 
+	// Simulation interface control options
+	bool EnableStatusDisplay;
+
 	static bool SynapseComp_NStart_NEnd(const Synapse &Syn1, const Synapse &Syn2){
 		return (Syn1.NStart < Syn2.NStart) || ((Syn1.NStart == Syn2.NStart) && (Syn1.NEnd < Syn2.NEnd));
 	}
@@ -168,6 +171,8 @@ struct SimulationVars{
 		isCurrentPNGRecurrent(0),
 		time(0),
 		CurrentQIndex(0),
+
+		EnableStatusDisplay(true),
 
 		PreSynNeuronSectionBeg(),
 		PreSynNeuronSectionEnd(),

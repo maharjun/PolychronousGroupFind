@@ -43,6 +43,9 @@ void SimulationVars::initialize(const mxArray *MatlabInputStruct){
 	this->MinLengthThreshold   = 5    ;
 	this->MaxLengthThreshold   = 20   ;
 
+	// Giving default values to Simulation interface control options
+	this->EnableStatusDisplay = true;
+
 	float*      genFloatPtr[4];     // Generic float Pointers used around the place to access data
 	int*        genIntPtr[2];       // Generic int Pointers used around the place to access data
 	uint32_t*	genUIntPtr[1];		// Generic unsigned int Pointers used around the place to access data (generator bits)
@@ -77,6 +80,9 @@ void SimulationVars::initialize(const mxArray *MatlabInputStruct){
 	getInputfromStruct<float>(MatlabInputStruct, "InitialWeight"       , this->InitialWeight       );
 	getInputfromStruct<int  >(MatlabInputStruct, "MinLengthThreshold"  , this->MinLengthThreshold  );
 	getInputfromStruct<int  >(MatlabInputStruct, "MaxLengthThreshold"  , this->MaxLengthThreshold  );
+
+	// Taking Input for Simulation interface control options
+	getInputfromStruct<int  >(MatlabInputStruct, "EnableStatusDisplay", this->EnableStatusDisplay);
 
 	this->FlippedExcNetwork.resize(0);
 	this->StrippedNetworkMapping.resize(0);
@@ -822,7 +828,8 @@ void PGrpFind::GetPolychronousGroups(SimulationVars &SimVars, OutputVariables &O
 		}
 		}
 		}
-		WriteOutput("Completed for target Neuron : %d\n", NeuTarget);
+		if (SimVars.EnableStatusDisplay)
+			WriteOutput("Completed for target Neuron : %d\n", NeuTarget);
 	}
 	
 	// Performing Output Conversion from unordered_map<uint64_T, PolyChrNeuronGroup>
