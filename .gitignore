@@ -49,6 +49,9 @@ Temporary Items
 /*.suo
 /*.*sdf
 
+# clion idea directory
+/.idea
+
 # un-ignore submodules
 !/MexMemoryInterfacing
 !/CMakeModules
